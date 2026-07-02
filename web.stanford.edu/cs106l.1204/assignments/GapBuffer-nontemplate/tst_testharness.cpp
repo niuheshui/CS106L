@@ -38,6 +38,7 @@ private slots:
     void cursor_index_test1();
 
     void reserve_test1();
+    void reserve_test2();
 
     void move_test1();
     void move_test2();
@@ -283,7 +284,6 @@ void TestHarness::const_test() {
     QVERIFY(buf.at(10) == 'c');
     QVERIFY(buf.size() == 15);
     QVERIFY(buf.cursor_index() == 15);
-
 }
 
 void TestHarness::at_test1() {
@@ -324,7 +324,6 @@ void TestHarness::cursor_index_test1() {
         QVERIFY(buf.cursor_index() == buf.size() + ch - end);
         buf.move_cursor(end - ch);
     }
-
 }
 
 void TestHarness::reserve_test1() {
@@ -341,6 +340,24 @@ void TestHarness::reserve_test1() {
 
     QVERIFY(buf.at(0) == 'a');
     QVERIFY(buf.at(1) == 'b');
+}
+
+void TestHarness::reserve_test2() {
+    GapBuffer buf;
+    const char start = 'a';
+    const char end = 'z';
+    buf.reserve(30);
+    for (char ch = start; ch <= end; ch++) {
+        buf.insert_at_cursor(ch);
+    }
+    buf.reserve(buf.size() - 1);
+    QVERIFY(buf.size() == (end - start + 1));
+    buf.debug();
+    buf.reserve(buf.size());
+    buf.debug();
+    for (char ch = start; ch <= end; ch++) {
+        QVERIFY(ch == buf.at(ch - start));
+    }
 }
 
 void TestHarness::move_test1() {

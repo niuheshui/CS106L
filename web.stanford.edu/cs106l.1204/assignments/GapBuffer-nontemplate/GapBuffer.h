@@ -145,13 +145,13 @@ std::ostream& operator<<(std::ostream& os, const GapBuffer& buf) {
 }
 
 bool operator==(const GapBuffer& left, const GapBuffer& right) {
-    GapBuffer::size_type leftSize = left.size();
-    GapBuffer::size_type rightSize = right.size();
-    if (leftSize != rightSize) {
+    GapBuffer::size_type left_size = left.size();
+    GapBuffer::size_type right_size = right.size();
+    if (left_size != right_size) {
         return false;
     }
 
-    for (GapBuffer::size_type i = 0; i < leftSize; ++i) {
+    for (GapBuffer::size_type i = 0; i < left_size; ++i) {
         if (left.at(i) != right.at(i)) {
             return false;
         }
@@ -165,11 +165,11 @@ bool operator!=(const GapBuffer& left, const GapBuffer& right) {
 }
 
 bool operator<(const GapBuffer& left, const GapBuffer& right) {
-    GapBuffer::size_type leftSize = left.size();
-    GapBuffer::size_type rightSize = right.size();
-    GapBuffer::size_type minSize = std::min(leftSize, rightSize);
+    GapBuffer::size_type left_size = left.size();
+    GapBuffer::size_type right_size = right.size();
+    GapBuffer::size_type min_size = std::min(left_size, right_size);
 
-    for (GapBuffer::size_type i = 0; i < minSize; ++i) {
+    for (GapBuffer::size_type i = 0; i < min_size; ++i) {
         GapBuffer::const_reference l = left.at(i);
         GapBuffer::const_reference r = right.at(i);
         if (l != r) {
@@ -177,7 +177,7 @@ bool operator<(const GapBuffer& left, const GapBuffer& right) {
         }
     }
 
-    return leftSize < rightSize;
+    return left_size < right_size;
 }
 
 bool operator>(const GapBuffer& left, const GapBuffer& right) {
@@ -220,9 +220,10 @@ void GapBuffer::move_cursor(int delta) {
 }
 
 void GapBuffer::reserve(size_type new_size) {
-    size_type oldSize = size();
-    if (_buffer_size >= new_size) return;
+    size_type old_size = size();
+    if (old_size > new_size) return;
     pointer new_elems = new char[new_size];
+    size_type new_gap_size = new_size - old_size;
     if (_elems != nullptr) {
         //   0 1 2 3 4 5 6 7 8 9
         // [ a|* * * * * * * * b ]
@@ -231,15 +232,15 @@ void GapBuffer::reserve(size_type new_size) {
                   _elems + _cursor_index, // 1
                   new_elems); // new 0
 
-        std::move(_elems+ _cursor_index, // 1
+        std::move(_elems+ _cursor_index + _gap_size, // 3
                   _elems + _buffer_size, // 4
-                  new_elems + _cursor_index + new_size - _buffer_size); // new 7
+                  new_elems + _cursor_index + new_gap_size); // new 9
 
         delete[] _elems;
     }
     _buffer_size = new_size;
     _elems = std::move(new_elems);
-    _gap_size = new_size - oldSize;
+    _gap_size = new_gap_size;
 }
 
 void GapBuffer::debug() const {
