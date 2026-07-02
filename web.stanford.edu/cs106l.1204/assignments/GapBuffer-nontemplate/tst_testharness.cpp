@@ -31,7 +31,19 @@ private slots:
     // Part 3 tests
     void insert_operator_test_basic();
     // will add tests for << and comparison operators soon.
+    void at_test1();
+
+    void delete_test1();
+
+    void cursor_index_test1();
+
     void reserve_test1();
+
+    void move_test1();
+    void move_test2();
+    void move_test3();
+    void move_test4();
+
     void output_test1();
     void output_test2();
     void output_test3();
@@ -274,27 +286,118 @@ void TestHarness::const_test() {
 
 }
 
-void TestHarness::reserve_test1() {
+void TestHarness::at_test1() {
     GapBuffer buf;
-    // buf.reserve(30);
-    char start = 'a';
-    char end = 'e';
+    try {
+        buf.at(0);
+        QVERIFY(false);
+    } catch (const std::out_of_range& e) {
+    }
+}
+
+void TestHarness::delete_test1() {
+    GapBuffer::size_type count = 10;
+    GapBuffer buf(count, 'a');
+
+    for (GapBuffer::size_type i = 0; i < count; ++i) {
+        buf.delete_at_cursor();
+    }
+
+    QVERIFY(buf.cursor_index() == 0);
+    QVERIFY(buf.size() == 0);
+}
+
+void TestHarness::cursor_index_test1() {
+    GapBuffer buf;
+    const char start = 'a';
+    const char end = 'e';
 
     for (char ch = start; ch <= end; ch++) {
         buf.insert_at_cursor(ch);
-        buf.debug();
     }
 
-    for (char ch = start; ch <= end; ch++) {
+    QVERIFY(buf.cursor_index() == buf.size());
+
+    for (char ch = end; ch >= start; ch--) {
         buf.move_cursor(ch - end);
         buf.debug();
+        QVERIFY(buf.cursor_index() == buf.size() + ch - end);
         buf.move_cursor(end - ch);
     }
 
-    buf.move_cursor(1);
-        buf.debug();
+}
 
+void TestHarness::reserve_test1() {
+    GapBuffer buf;
+    buf.reserve(4);
+    buf.insert_at_cursor('a');
+    buf.insert_at_cursor('b');
+    buf.move_cursor(-1);
+    // buf.debug();
+    GapBuffer::size_type beforeSize = buf.size();
+    buf.reserve(10);
+    // buf.debug();
+    QVERIFY(beforeSize == buf.size());
 
+    QVERIFY(buf.at(0) == 'a');
+    QVERIFY(buf.at(1) == 'b');
+}
+
+void TestHarness::move_test1() {
+    GapBuffer buf;
+    const char start = 'a';
+    const char end = 'z';
+
+    for (char ch = start; ch <= end; ch++) {
+        buf.insert_at_cursor(ch);
+        buf.move_cursor(-1);
+        // buf.debug();
+    }
+
+    try {
+        buf.move_cursor(-1);
+        QVERIFY(false);
+    } catch(const std::out_of_range& e) {
+    }
+
+    for (char ch = end; ch >= start; ch--) {
+        buf.move_cursor(1);
+        QVERIFY(ch == buf.get_at_cursor());
+    }
+
+    try {
+        buf.move_cursor(1);
+        QVERIFY(false);
+    } catch(const std::out_of_range& e) {
+    }
+
+}
+
+void TestHarness::move_test2() {
+    GapBuffer buf;
+    try {
+        buf.move_cursor(-1);
+        QVERIFY(false);
+    } catch (const std::out_of_range& e) {
+    }
+}
+
+void TestHarness::move_test3() {
+    GapBuffer buf;
+    try {
+        buf.move_cursor(1);
+        QVERIFY(false);
+    } catch (const std::out_of_range& e) {
+    }
+}
+
+void TestHarness::move_test4() {
+    GapBuffer buf(10, 'a');
+    buf.reserve(100);
+    try {
+        buf.move_cursor(1);
+        QVERIFY(false);
+    } catch (const std::out_of_range& e) {}
 }
 
 void TestHarness::output_test1() {

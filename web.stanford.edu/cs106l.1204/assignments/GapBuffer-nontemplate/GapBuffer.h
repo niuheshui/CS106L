@@ -20,6 +20,7 @@ public:
     // Part 1
     GapBuffer();
     GapBuffer(size_type count, const value_type& val = value_type());
+    ~GapBuffer();
     void insert_at_cursor(const_reference element);
     void delete_at_cursor();
     reference get_at_cursor();
@@ -44,18 +45,15 @@ public:
 
 private:
     pointer _elems; // uses array_index
-    size_type _logical_size; // uses external_index
     size_type _buffer_size; // uses array_index
     size_type _cursor_index; // uses array_index
     size_type _gap_size;
-    size_type to_external_index(size_type array_index);
-    size_type to_array_index(size_type external_index) const;
+    size_type to_array_index(size_type logic_index) const;
     void move_to_left_of_buffer(size_type num);
 };
 
 GapBuffer::GapBuffer() :
     _elems(nullptr),
-    _logical_size(0),
     _buffer_size(0),
     _cursor_index(0),
     _gap_size(0) {}
@@ -94,7 +92,7 @@ typename GapBuffer::const_reference GapBuffer::get_at_cursor() const {
 typename GapBuffer::reference GapBuffer::at(size_type pos) {
     pos = to_array_index(pos);
     if (pos >= _buffer_size) {
-        throw std::out_of_range("GapBuffer::at: index out of bound");
+        throw std::out_of_range("GapBuffer::at: index out of bounds");
     }
     return _elems[pos];
 }
@@ -202,10 +200,10 @@ bool operator>=(const GapBuffer& left, const GapBuffer& right) {
 void GapBuffer::move_cursor(int delta) {
     int new_index = _cursor_index + delta;
     if (new_index < 0 || new_index > static_cast<int>(_buffer_size)) {
-        throw std::string("move_cursor: delta moves cursor out of bounds");
+        throw std::out_of_range("move_cursor: delta moves cursor out of bounds");
     }
     if (delta > 0 && _cursor_index == size()) {
-        return;
+        throw std::out_of_range("GapBuffer::move_cursor index out of bounds");
     }
     if (delta > 0) {
         pointer begin_move = _elems + _cursor_index + _gap_size;
@@ -222,18 +220,26 @@ void GapBuffer::move_cursor(int delta) {
 }
 
 void GapBuffer::reserve(size_type new_size) {
-    if (size() >= new_size) return;
+    size_type oldSize = size();
+    if (_buffer_size >= new_size) return;
     pointer new_elems = new char[new_size];
-    size_t new_gap_size = new_size - _buffer_size;
     if (_elems != nullptr) {
-        std::move(_elems, _elems + _cursor_index, new_elems);
-        std::move(_elems+ _cursor_index, _elems + _buffer_size,
-              new_elems + _cursor_index + new_gap_size);
+        //   0 1 2 3 4 5 6 7 8 9
+        // [ a|* * * * * * * * b ]
+        // [ a|* * b ]
+        std::move(_elems, // 0
+                  _elems + _cursor_index, // 1
+                  new_elems); // new 0
+
+        std::move(_elems+ _cursor_index, // 1
+                  _elems + _buffer_size, // 4
+                  new_elems + _cursor_index + new_size - _buffer_size); // new 7
+
         delete[] _elems;
     }
     _buffer_size = new_size;
     _elems = std::move(new_elems);
-    _gap_size = new_gap_size;
+    _gap_size = new_size - oldSize;
 }
 
 void GapBuffer::debug() const {
@@ -254,21 +260,20 @@ void GapBuffer::debug() const {
     std::cout << "]" << std::endl;
 }
 
-typename GapBuffer::size_type GapBuffer::to_external_index(size_type array_index)  {
-    if (array_index < _cursor_index) {
-        return array_index;
-    } else if (array_index >= _cursor_index + _gap_size){
-        return array_index - _cursor_index;
+typename GapBuffer::size_type GapBuffer::to_array_index(size_type logic_index) const {
+    if (logic_index >= size()) {
+        throw std::out_of_range("GapBuffer::to_array_index: index out of bounds");
+    }
+    if (logic_index < _cursor_index) {
+        return logic_index;
     } else {
-        throw ("to_external_index: array_index is out of bounds!");
+        return logic_index + _gap_size;
     }
 }
 
-typename GapBuffer::size_type GapBuffer::to_array_index(size_type external_index) const {
-    if (external_index < _cursor_index) {
-        return external_index;
-    } else {
-        return external_index + _gap_size;
+GapBuffer::~GapBuffer() {
+    if (_elems != nullptr) {
+        delete[] _elems;
     }
 }
 
