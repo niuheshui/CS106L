@@ -463,6 +463,7 @@ void TestCases::TEST3E_index_operator_reference_advanced() {
     auto& val7 = buf[7];
     const auto& val8 = buf[8];
     val5 = -5;
+    (void) val5;
     val7 = -7;
     (void) val8; // suppress warning
     QVERIFY(buf[5] == 5);

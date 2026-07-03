@@ -63,14 +63,12 @@ public:
     iterator cursor();
 
 private:
+    pointer _elems;          // uses array_index
     size_type _buffer_size;  // uses array_index
     size_type _cursor_index; // uses array_index
     size_type _gap_size;
-    pointer _elems;          // uses array_index
 
-    size_type to_external_index(size_type array_index) const;
     size_type to_array_index(size_type external_index) const;
-    void move_to_left_of_buffer(size_type num);
 };
 
 // Class declaration of the GapBufferIterator class
@@ -498,17 +496,6 @@ void GapBuffer<T>::debug() const {
     }
     std::cout << (_cursor_index == _buffer_size ? "|" : " ");
     std::cout << "]" << std::endl;
-}
-
-template <typename T>
-typename GapBuffer<T>::size_type GapBuffer<T>::to_external_index(size_type array_index) const {
-    if (array_index < _cursor_index) {
-        return array_index;
-    } else if (array_index >= _cursor_index + _gap_size){
-        return array_index - _cursor_index;
-    } else {
-        throw ("to_external_index: array_index is out of bounds!");
-    }
 }
 
 template <typename T>
