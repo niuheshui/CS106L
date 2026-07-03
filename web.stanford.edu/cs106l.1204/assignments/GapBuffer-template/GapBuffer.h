@@ -152,8 +152,6 @@ typename GapBuffer<T>::reference GapBuffer<T>::get_at_cursor() {
 
 template <typename T>
 typename GapBuffer<T>::reference GapBuffer<T>::at(size_type pos) {
-    // return const_cast<const GapBuffer<T>*>(this)->at(pos);
-    // return const_cast<GapBuffer<T>::reference>(const_cast<const GapBuffer<T>*>(this)->at(pos));
     pos = to_array_index(pos);
     if (pos >= _buffer_size) {
         throw std::out_of_range("GapBuffer::at: index out of bounds");
@@ -185,12 +183,6 @@ typename GapBuffer<T>::const_reference GapBuffer<T>::get_at_cursor() const {
 
 template <typename T>
 typename GapBuffer<T> ::const_reference GapBuffer<T>::at(size_type pos) const {
-    // pos = to_array_index(pos);
-    // if (pos >= _buffer_size) {
-    //     throw std::out_of_range("GapBuffer::at: index out of bounds");
-    // }
-    // return _elems[pos];
-
     return const_cast<GapBuffer<T>*>(this)->at(pos);
 }
 
@@ -344,23 +336,22 @@ GapBuffer<T>::~GapBuffer() {
         delete[] _elems;
     }
 }
+
 template <typename T>
 GapBuffer<T>::GapBuffer(std::initializer_list<T> init) : GapBuffer<T>() {
-    // TODO: implement this initializer list constructor (~2 lines long)
     for (const T& i : init) {
         insert_at_cursor(i);
     }
 }
 
 template <typename T>
-GapBuffer<T>::GapBuffer(const GapBuffer& other) {
-    // TODO: implement this copy constructor (~4 lines long)
-    // use member initialization list!
-    _elems = new T[other._buffer_size];
-    _buffer_size = other._buffer_size;
-    _cursor_index = other._cursor_index;
-    _gap_size = other._gap_size;
-    std::copy(other._elems, other._elems + _buffer_size, _elems);
+GapBuffer<T>::GapBuffer(const GapBuffer& other)
+    : _elems(new T[other._buffer_size])
+    , _buffer_size(other._buffer_size)
+    , _cursor_index(other._cursor_index)
+    , _gap_size(other._gap_size)
+{
+    std::copy(other._elems, other._elems + other._buffer_size, _elems);
 }
 
 template <typename T>
