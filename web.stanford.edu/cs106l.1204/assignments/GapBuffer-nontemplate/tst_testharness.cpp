@@ -161,7 +161,7 @@ void TestHarness::insert_move_cursor_at_basic() {
         buf.insert_at_cursor(ch);
     }
     QVERIFY(buf.size() == 26);
-    for (char ch = 'z' - 1; ch >= 'a'; ch--) {
+    for (char ch = 'z'; ch >= 'a'; ch--) {
         buf.move_cursor(-1);
         QVERIFY(ch == buf.get_at_cursor());
     }
@@ -200,10 +200,10 @@ void TestHarness::move_cursor_jump() {
     for (char ch = 'a'; ch <= 'g'; ch++) {
         buf.insert_at_cursor(ch);
     }
-    // [a b c d e f g|]
+    // [a b c d e f|]
     buf.move_cursor(-1);
-    // [a b c d e f|g]
-    for (char ch = 'f'; ch >= 'c'; ch -= 3) {
+    // [a b c d e|f]
+    for (char ch = 'g'; ch >= 'c'; ch -= 3) {
         QVERIFY(buf.get_at_cursor() == ch);
         buf.move_cursor(-3);
     }
@@ -293,6 +293,12 @@ void TestHarness::at_test1() {
         QVERIFY(false);
     } catch (const std::out_of_range& e) {
     }
+
+    try {
+        buf.at(999);
+        QVERIFY(false);
+    } catch (const std::out_of_range& e) {
+    }
 }
 
 void TestHarness::delete_test1() {
@@ -378,8 +384,8 @@ void TestHarness::move_test1() {
     }
 
     for (char ch = end; ch >= start; ch--) {
-        buf.move_cursor(1);
         QVERIFY(ch == buf.get_at_cursor());
+        buf.move_cursor(1);
     }
 
     try {

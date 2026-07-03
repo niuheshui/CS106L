@@ -82,7 +82,7 @@ void GapBuffer::delete_at_cursor() {
 }
 
 typename GapBuffer::reference GapBuffer::get_at_cursor() {
-    return at(_cursor_index - 1);
+    return at(_cursor_index);
 }
 
 typename GapBuffer::const_reference GapBuffer::get_at_cursor() const {
@@ -110,7 +110,7 @@ GapBuffer::size_type GapBuffer::cursor_index() const {
 }
 
 bool GapBuffer::empty() const {
-    return _buffer_size == _gap_size;
+    return size() == 0;
 }
 
 GapBuffer::reference GapBuffer::operator[](GapBuffer::size_type pos) {
@@ -126,9 +126,9 @@ GapBuffer::const_reference GapBuffer::operator[](GapBuffer::size_type pos) const
 
 std::ostream& operator<<(std::ostream& os, const GapBuffer& buf) {
     os << "{";
-    GapBuffer::size_type buf_size = buf.size();
-    GapBuffer::size_type cursor_index = buf.cursor_index();
-    for (GapBuffer::size_type i = 0; i < buf_size; i++) {
+    typename GapBuffer::size_type buf_size = buf.size();
+    typename GapBuffer::size_type cursor_index = buf.cursor_index();
+    for (typename GapBuffer::size_type i = 0; i < buf_size; i++) {
         if (i != 0) {
             os << ", ";
         }
@@ -145,13 +145,13 @@ std::ostream& operator<<(std::ostream& os, const GapBuffer& buf) {
 }
 
 bool operator==(const GapBuffer& left, const GapBuffer& right) {
-    GapBuffer::size_type left_size = left.size();
-    GapBuffer::size_type right_size = right.size();
+    typename GapBuffer::size_type left_size = left.size();
+    typename GapBuffer::size_type right_size = right.size();
     if (left_size != right_size) {
         return false;
     }
 
-    for (GapBuffer::size_type i = 0; i < left_size; ++i) {
+    for (typename GapBuffer::size_type i = 0; i < left_size; ++i) {
         if (left.at(i) != right.at(i)) {
             return false;
         }
@@ -165,13 +165,13 @@ bool operator!=(const GapBuffer& left, const GapBuffer& right) {
 }
 
 bool operator<(const GapBuffer& left, const GapBuffer& right) {
-    GapBuffer::size_type left_size = left.size();
-    GapBuffer::size_type right_size = right.size();
-    GapBuffer::size_type min_size = std::min(left_size, right_size);
+    typename GapBuffer::size_type left_size = left.size();
+    typename GapBuffer::size_type right_size = right.size();
+    typename GapBuffer::size_type min_size = std::min(left_size, right_size);
 
-    for (GapBuffer::size_type i = 0; i < min_size; ++i) {
-        GapBuffer::const_reference l = left.at(i);
-        GapBuffer::const_reference r = right.at(i);
+    for (typename GapBuffer::size_type i = 0; i < min_size; ++i) {
+        typename GapBuffer::const_reference l = left.at(i);
+        typename GapBuffer::const_reference r = right.at(i);
         if (l != r) {
             return l < r;
         }
@@ -199,11 +199,8 @@ bool operator>=(const GapBuffer& left, const GapBuffer& right) {
 /* We've implemented these for you, do not edit! */
 void GapBuffer::move_cursor(int delta) {
     int new_index = _cursor_index + delta;
-    if (new_index < 0 || new_index > static_cast<int>(_buffer_size)) {
+    if (new_index < 0 || new_index > static_cast<int>(size())) {
         throw std::out_of_range("move_cursor: delta moves cursor out of bounds");
-    }
-    if (delta > 0 && _cursor_index == size()) {
-        throw std::out_of_range("GapBuffer::move_cursor index out of bounds");
     }
     if (delta > 0) {
         pointer begin_move = _elems + _cursor_index + _gap_size;
@@ -262,9 +259,6 @@ void GapBuffer::debug() const {
 }
 
 typename GapBuffer::size_type GapBuffer::to_array_index(size_type logic_index) const {
-    if (logic_index >= size()) {
-        throw std::out_of_range("GapBuffer::to_array_index: index out of bounds");
-    }
     if (logic_index < _cursor_index) {
         return logic_index;
     } else {
